@@ -59,6 +59,7 @@ public class ArithmeticIntegrationTest extends SQLTransportIntegrationTest {
         execute("insert into t (d) values (?), (?), (?)", new Object[]{1.3d, 1.6d, 2.2d});
         execute("refresh table t");
 
+        /*
         execute("select * from t where round(d) < 2");
         assertThat(response.rowCount(), is(1L));
 
@@ -68,6 +69,7 @@ public class ArithmeticIntegrationTest extends SQLTransportIntegrationTest {
         execute("select floor(d) from t where floor(d) = 2");
         assertThat(response.rowCount(), is(1L));
         assertThat((Long) response.rows()[0][0], is(2L));
+         */
 
         execute("insert into t (d, i) values (?, ?)", new Object[]{-0.2, 10});
         execute("refresh table t");

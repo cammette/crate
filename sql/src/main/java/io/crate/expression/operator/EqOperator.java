@@ -72,6 +72,7 @@ public final class EqOperator extends Operator<Object> {
         if (right == null) {
             return null;
         }
+        System.out.println("left=" + left + " == right=" + right);
         return left.equals(right);
     }
 
