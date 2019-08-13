@@ -41,7 +41,7 @@ public class IntervalFunctionTest extends AbstractScalarFunctionsTest {
 
     @Test
     public void test_out_of_range_value() {
-        expectedException.expect(RuntimeException.class);
+        expectedException.expect(ArithmeticException.class);
         expectedException.expectMessage("Interval field value out of range");
         assertEvaluate("interval '9223372036854775807'", Matchers.is(Period.seconds(1)));
     }

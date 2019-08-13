@@ -312,7 +312,7 @@ public class ArithmeticFunctions {
 
         IntervalTimestampScalar(String operator, String name, DataType firstType, DataType secondType, DataType returnType) {
             this.info = new FunctionInfo(new FunctionIdent(name, Arrays.asList(firstType, secondType)), returnType);
-             if(ArithmeticFunctionResolver.isInterval(firstType)) {
+            if (ArithmeticFunctionResolver.isInterval(firstType)) {
                 periodIdx = 0;
                 timestampIdx = 1;
             } else {
@@ -339,7 +339,7 @@ public class ArithmeticFunctions {
 
         @Override
         public Long evaluate(TransactionContext txnCtx, Input<Object>... args) {
-            final Long timestamp  = (Long) args[timestampIdx].value();
+            final Long timestamp = (Long) args[timestampIdx].value();
             final Period period = (Period) args[periodIdx].value();
 
             if (period == null || timestamp == null) {

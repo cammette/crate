@@ -160,7 +160,7 @@ public final class IntervalParser {
         try {
             return new BigDecimal(value).intValueExact();
         } catch (ArithmeticException e) {
-            throw new RuntimeException("Interval field value out of range " + value);
+            throw new ArithmeticException("Interval field value out of range " + value);
         }
     }
 
