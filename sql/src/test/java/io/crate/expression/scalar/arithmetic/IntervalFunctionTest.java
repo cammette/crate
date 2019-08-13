@@ -37,6 +37,10 @@ public class IntervalFunctionTest extends AbstractScalarFunctionsTest {
         assertEvaluate("interval '2 second' - interval '1 second'", Matchers.is(Period.seconds(1)));
         assertEvaluate("interval '-1 second' - interval '-1 second'", Matchers.is(Period.seconds(0)));
         assertEvaluate("interval '1 month' + interval '1 year'", Matchers.is(Period.years(1).withMonths(1)));
+    }
+
+    @Test
+    public void test_out_of_range_value() {
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("Interval field value out of range");
         assertEvaluate("interval '9223372036854775807'", Matchers.is(Period.seconds(1)));
@@ -61,9 +65,16 @@ public class IntervalFunctionTest extends AbstractScalarFunctionsTest {
         assertEvaluate("interval '1 second' + '86400000'::timestamp", Matchers.is(86401000L));
         assertEvaluate("'86401000'::timestamp - interval '1 second'", Matchers.is(86400000L));
         assertEvaluate("'86400000'::timestamp - interval '-1 second'", Matchers.is(86401000L));
-        assertEvaluate("'86400000'::timestamp + interval '1 second'", Matchers.is(86401000L));
+        assertEvaluate("'86400000'::timestamp + interval '-1 second'", Matchers.is(86399000L));
+        assertEvaluate("'86400000'::timestamp - interval '1000 years'", Matchers.is(-31556822400000L));
+        assertEvaluate("'9223372036854775807'::timestamp - interval '1 second'", Matchers.is(9223372036854774807L));
+
+    }
+
+    @Test
+    public void test_unallowed_operations() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Operation not allowed");
+        expectedException.expectMessage("Unsupported operator for interval -");
         assertEvaluate("interval '1 second' - '86401000'::timestamp", Matchers.is(86400000L));
     }
 

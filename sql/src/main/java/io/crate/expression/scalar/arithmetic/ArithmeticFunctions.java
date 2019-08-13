@@ -211,7 +211,7 @@ public class ArithmeticFunctions {
                         break;
 
                     case IntervalType.ID:
-                        scalar = new IntervalArithmeticScalar(operator);
+                        scalar = new IntervalArithmeticScalar(operator, name);
                         break;
 
                     case LongType.ID:
@@ -228,10 +228,10 @@ public class ArithmeticFunctions {
             }
 
             if (isInterval(fst) && isTimestamp(snd)) {
-                return new IntervalTimestampScalar(operator, fst, snd, snd);
+                return new IntervalTimestampScalar(operator, name, fst, snd, snd);
             }
             if (isTimestamp(fst) && isInterval(snd)) {
-                return new IntervalTimestampScalar(operator, fst, snd, fst);
+                return new IntervalTimestampScalar(operator, name, fst, snd, fst);
             }
 
             throw new UnsupportedOperationException(
@@ -269,9 +269,9 @@ public class ArithmeticFunctions {
         private final FunctionInfo info;
         private final BiFunction<Period, Period, Period> operation;
 
-        IntervalArithmeticScalar(String operator) {
+        IntervalArithmeticScalar(String operator, String name) {
             this.info = new FunctionInfo(
-                new FunctionIdent("interval", Arrays.asList(DataTypes.INTERVAL, DataTypes.INTERVAL)), DataTypes.INTERVAL);
+                new FunctionIdent(name, Arrays.asList(DataTypes.INTERVAL, DataTypes.INTERVAL)), DataTypes.INTERVAL);
             switch (operator) {
                 case "+":
                     operation = Period::plus;
@@ -307,16 +307,19 @@ public class ArithmeticFunctions {
 
         private final BiFunction<DateTime, Period, DateTime> operation;
         private final FunctionInfo info;
+        private final boolean firstValueIsInterval;
 
-        IntervalTimestampScalar(String operator, DataType firstType, DataType secondType, DataType returnType) {
-            this.info = new FunctionInfo(new FunctionIdent("intervaltimestamp", Arrays.asList(firstType, secondType)), returnType);
+        IntervalTimestampScalar(String operator, String name, DataType firstType, DataType secondType, DataType returnType) {
+            this.info = new FunctionInfo(new FunctionIdent(name, Arrays.asList(firstType, secondType)), returnType);
+            this.firstValueIsInterval = ArithmeticFunctionResolver.isInterval(firstType);
+
             switch (operator) {
                 case "+":
                     operation = DateTime::plus;
                     break;
                 case "-":
                     if (ArithmeticFunctionResolver.isInterval(firstType)) {
-                        throw new IllegalArgumentException("Operation not allowed");
+                        throw new IllegalArgumentException("Unsupported operator for interval " + operator);
                     }
                     operation = DateTime::minus;
                     break;
@@ -329,22 +332,19 @@ public class ArithmeticFunctions {
 
         @Override
         public Long evaluate(TransactionContext txnCtx, Input<Object>... args) {
-            Object fst = args[0].value();
-            Object snd = args[1].value();
-
-            if (fst == null || snd == null) {
-                return null;
-            }
-
             final Long timestamp;
             final Period period;
 
-            if (fst instanceof Long && snd instanceof Period) {
-                timestamp = (Long) args[0].value();
-                period = (Period) args[1].value();
-            } else {
-                timestamp = (Long) args[1].value();
+            if (firstValueIsInterval) {
                 period = (Period) args[0].value();
+                timestamp = (Long) args[1].value();
+            } else {
+                period = (Period) args[1].value();
+                timestamp = (Long) args[0].value();
+            }
+
+            if (period == null || timestamp == null) {
+                return null;
             }
             return operation.apply(new DateTime(timestamp, DateTimeZone.UTC), period).toInstant().getMillis();
         }
@@ -354,5 +354,4 @@ public class ArithmeticFunctions {
             return this.info;
         }
     }
-
 }
