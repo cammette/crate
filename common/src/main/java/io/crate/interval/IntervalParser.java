@@ -156,14 +156,6 @@ public final class IntervalParser {
             .multiply(new BigDecimal(1000)).intValue();
     }
 
-    static int parseInteger(String value) {
-        try {
-            return new BigDecimal(value).intValueExact();
-        } catch (ArithmeticException e) {
-            throw new ArithmeticException("Interval field value out of range " + value);
-        }
-    }
-
     static int nullSafeIntGet(String value) {
         return (value == null) ? 0 : Integer.parseInt(value);
     }
