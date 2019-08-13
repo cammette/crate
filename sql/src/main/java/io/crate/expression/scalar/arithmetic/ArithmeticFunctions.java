@@ -307,11 +307,18 @@ public class ArithmeticFunctions {
 
         private final BiFunction<DateTime, Period, DateTime> operation;
         private final FunctionInfo info;
-        private final boolean firstValueIsInterval;
+        private final int periodIdx;
+        private final int timestampIdx;
 
         IntervalTimestampScalar(String operator, String name, DataType firstType, DataType secondType, DataType returnType) {
             this.info = new FunctionInfo(new FunctionIdent(name, Arrays.asList(firstType, secondType)), returnType);
-            this.firstValueIsInterval = ArithmeticFunctionResolver.isInterval(firstType);
+             if(ArithmeticFunctionResolver.isInterval(firstType)) {
+                periodIdx = 0;
+                timestampIdx = 1;
+            } else {
+                periodIdx = 1;
+                timestampIdx = 0;
+            }
 
             switch (operator) {
                 case "+":
@@ -332,16 +339,8 @@ public class ArithmeticFunctions {
 
         @Override
         public Long evaluate(TransactionContext txnCtx, Input<Object>... args) {
-            final Long timestamp;
-            final Period period;
-
-            if (firstValueIsInterval) {
-                period = (Period) args[0].value();
-                timestamp = (Long) args[1].value();
-            } else {
-                period = (Period) args[1].value();
-                timestamp = (Long) args[0].value();
-            }
+            final Long timestamp  = (Long) args[timestampIdx].value();
+            final Period period = (Period) args[periodIdx].value();
 
             if (period == null || timestamp == null) {
                 return null;
