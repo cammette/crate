@@ -33,6 +33,12 @@ public abstract class AbstractTokenizerFactory extends AbstractIndexComponent im
         this.version = Analysis.parseAnalysisVersion(this.indexSettings.getSettings(), settings, logger);
     }
 
+    //兼容IK
+    public AbstractTokenizerFactory(IndexSettings indexSettings, Settings settings) {
+        super(indexSettings);
+        this.version = Analysis.parseAnalysisVersion(this.indexSettings.getSettings(), settings, logger);
+    }
+
     public final Version version() {
         return version;
     }
